@@ -1,0 +1,1082 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8" />
+  <title>NutriScan Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+
+  /* ===== HEADER ===== */
+  .header {
+    width: 100%;
+    background: #374785;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 40px;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 25px;
+  }
+
+  .nav-tabs button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .nav-tabs button:hover {
+    text-decoration: underline;
+  }
+  /* ===== HERO SECTION ===== */
+
+  .hero-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+
+  .hero-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1;
+  }
+
+
+  .hero-content {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    width: 90%;
+    max-width: 800px;
+  }
+
+
+  .hero-content h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+  }
+
+  .hero-content p {
+    font-size: 18px;
+    max-width: 700px;
+    margin: auto;
+  }
+
+  .hero-buttons {
+    margin-top: 25px;
+  }
+
+  .hero-buttons button {
+    padding: 12px 25px;
+    margin: 10px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #374785;
+    color: white;
+    transition: 0.3s ease;
+  }
+
+  .hero-buttons button:hover {
+    background: #24305e;
+  }
+
+  .secondary-btn {
+    background: white !important;
+    color: #374785 !important;
+  }
+
+  /* ===== HOME INFO CARDS ===== */
+
+  .home-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    padding: 60px 20px;
+    background: #f7f9fb;
+  }
+
+  .info-card-home {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 280px;
+    text-align: center;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+  }
+
+  .info-card-home:hover {
+    transform: translateY(-8px);
+  }
+
+  .info-card-home img {
+    width: 200px;
+    height: 150px;
+    object-fit: contain;
+    margin-bottom: 15px;
+  }
+
+  .info-card-home h3 {
+    color: #374785;
+    margin-bottom: 10px;
+  }
+
+  .info-card-home p {
+    font-size: 14px;
+    color: #555;
+  }
+
+  /* ===== RESPONSIVE ===== */
+
+  @media(max-width:768px) {
+    .hero-content h1 {
+      font-size: 30px;
+    }
+
+    .hero-content p {
+      font-size: 15px;
+    }
+
+    .home-info {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+
+  /* ===== CONTENT ===== */
+  .main-content {
+    margin-top: 90px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .section {
+    display: none;
+  }
+
+  .section.active {
+    display: block;
+  }
+
+  /* Center Info Box */
+  .info-box {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  .logout-btn {
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .logout-btn:hover {
+    background: #cc0000;
+  }
+  /* ===== TEAM SECTION ===== */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .team-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .team-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+
+  .team-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid #374785;
+  }
+
+  .team-card h3 {
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #374785;
+  }
+
+  .team-card p {
+    font-size: 14px;
+    color: #555;
+  }
+  /* ===== PROFILE DESIGN ===== */
+
+  .profile-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+  }
+
+  .profile-title {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #374785;
+  }
+
+  .profile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .avatar {
+    width: 70px;
+    height: 70px;
+    background: #374785;
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  .profile-item {
+    background: #f7f9fb;
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  .profile-item strong {
+    display: block;
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 5px;
+  }
+
+  .profile-item span {
+    font-size: 16px;
+    color: #374785;
+    font-weight: 500;
+  }
+  .scanner-container {
+    max-width: 900px;
+    margin: auto;
+    text-align: center;
+  }
+
+  .upload-box {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
+
+  .upload-box img {
+    width: 200px;
+    margin-top: 15px;
+    border-radius: 10px;
+  }
+
+  .upload-box button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #374785;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .upload-box button:hover {
+    background: #24305e;
+  }
+
+  .result-card {
+    margin-top: 30px;
+    padding: 25px;
+    border-radius: 15px;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .safe { border-left: 8px solid green; }
+  .not-safe { border-left: 8px solid red; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .progress-bar {
+    height: 12px;
+    background: #eee;
+    border-radius: 10px;
+    margin: 10px 0;
+  }
+
+  .progress-fill {
+    height: 12px;
+    border-radius: 10px;
+    background: #374785;
+  }
+  .chart-container {
+    width: 250px;
+    height: 250px;
+    margin: 20px auto;
+  }
+  .ingredient-box {
+    background: #f7f9fb;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: left;
+  }
+
+
+
+
+
+  </style>
+
+  </head>
+
+  <body>
+
+  <!-- ===== STATIC HEADER ===== -->
+  <div class="header">
+    <div class="logo">
+      <img src="image.jpg" alt="Logo">
+      <h2>NutriScan</h2>
+    </div>
+
+    <div class="nav-tabs">
+      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('food')">Food Scanner</button>
+      <button onclick="showSection('about')">About Us</button>
+      <button onclick="showSection('profile')">Profile</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="main-content">
+
+    <!-- HOME / HERO SECTION -->
+  <div id="home" class="section active">
+
+    <div class="hero-container">
+
+      <!-- Background Video -->
+      <video autoplay muted loop class="hero-video">
+        <source src="bg-video.mp4" type="video/mp4">
+      </video>
+
+      <!-- Overlay -->
+      <div class="hero-overlay"></div>
+
+      <!-- Content -->
+      <div class="hero-content">
+        <h1>Welcome to NutriScan 🌿</h1>
+        <p>
+          Smart AI-powered food label analyzer designed to help you 
+          make healthier and safer food choices.
+        </p>
+
+        <div class="hero-buttons">
+          <button onclick="showSection('food')">Start Scanning 🍎</button>
+          <button onclick="showSection('about')" class="secondary-btn">Learn More</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Info Section Below Video -->
+    <div class="home-info">
+
+      <div class="info-card-home">
+        <img src="Scan.webp" alt="Scan">
+        <h3>Ingredient Detection</h3>
+        <p>Extract ingredients from food labels using AI-based OCR.</p>
+      </div>
+
+      <div class="info-card-home">
+        <img src="risk.jpeg" alt="Health">
+        <h3>Health Risk Analysis</h3>
+        <p>Classifies ingredients as High, Medium, or Low risk.</p>
+      </div>
+
+      <div class="info-card-home">
+        <img src="health.jpeg" alt="Personalized">
+        <h3>Personalized Results</h3>
+        <p>Alerts based on your allergies and health conditions.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+
+    <!-- FOOD SCANNER SECTION -->
+    <div id="food" class="section">
+    <div class="scanner-container">
+
+      <h2>🍎 Smart Food Scanner</h2>
+      <p>Upload food label image for AI-powered health analysis</p>
+
+      <div class="upload-box">
+        <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+
+        <!-- Camera Button -->
+    <button onclick="openCamera()">📷 Click Photo</button>
+
+    <br><br>
+
+    <!-- Camera Preview -->
+    <video id="camera"
+          width="300"
+          autoplay
+          style="display:none; border-radius:10px;">
+    </video>
+
+    <br>
+
+    <!-- Capture Button -->
+    <button onclick="capturePhoto()" id="captureBtn"
+            style="display:none;">
+            Capture
+    </button>
+
+    <!-- Image Preview -->
+    <img id="preview" style="display:none; width:200px;" />
+
+    <br>
+
+    <button onclick="analyzeFood()">Analyze Now 🚀</button>
+      
+      </div>
+
+      <div id="resultBox" class="result-card"></div>
+
+    </div>
+  </div>
+
+
+  <!-- ABOUT US SECTION -->
+  <div id="about" class="section">
+    <div class="info-box">
+      
+      <h2 style="margin-bottom:20px;">Meet Team A13 👩‍💻👨‍💻</h2>
+
+      <p style="margin-bottom:25px;">
+        NutriScan is an AI-powered Final Year BE Project developed to enhance 
+        food awareness using intelligent ingredient detection and health risk analysis.
+      </p>
+
+      <!-- TEAM GRID -->
+      <div class="team-grid">
+
+        <!-- MEMBER 1 -->
+        <div class="team-card">
+          <img src="team1.jpeg" alt="Akshada">
+          <h3>Akshada Shivaji Gunjal</h3>
+          <p>Full Stack Developer & ML Integration</p>
+        </div>
+
+        <!-- MEMBER 2 -->
+        <div class="team-card">
+          <img src="Pranali.jpeg" alt="Pranali">
+          <h3>Pranali Dnyaneshwar Hase</h3>
+          <p>Frontend Developer & UI Designer</p>
+        </div>
+
+        <!-- MEMBER 3 -->
+        <div class="team-card">
+          <img src="Om.jpeg" alt="Om">
+          <h3>Om Vaibhav Gunjal</h3>
+          <p>Backend Developer & API Integration</p>
+        </div>
+
+        <!-- MEMBER 4 -->
+        <div class="team-card">
+          <img src="Tejal.jpeg" alt="Tejal">
+          <h3>Tejal Sharad Ambre</h3>
+          <p>Documentation & Testing</p>
+        </div>
+
+      </div>
+
+      <br>
+      <p style="margin-top:20px;">
+        🎓 Computer Engineering Department  
+        📍 Amrutvahini College of Engineering  
+        📅 Academic Year 2025–26
+      </p>
+
+    </div>
+  </div>
+
+
+  <!-- PROFILE SECTION -->
+  <div id="profile" class="section">
+    <div class="profile-container">
+
+      <h2 class="profile-title">👤 My Health Profile</h2>
+
+      <div class="profile-card">
+
+        <div class="profile-header">
+          <div class="avatar">
+            <span id="initialLetter">U</span>
+          </div>
+          <div>
+            <h3 id="profileName">Loading...</h3>
+            <p id="profileEmail">--</p>
+          </div>
+        </div>
+
+        <div class="profile-grid">
+
+          <div class="profile-item">
+            <strong>Age</strong>
+            <span id="profileAge">--</span>
+          </div>
+
+          <div class="profile-item">
+            <strong>Gender</strong>
+            <span id="profileGender">--</span>
+          </div>
+
+          <div class="profile-item">
+            <strong>Height</strong>
+            <span id="profileHeight">--</span> cm
+          </div>
+
+          <div class="profile-item">
+            <strong>Weight</strong>
+            <span id="profileWeight">--</span> kg
+          </div>
+
+          <div class="profile-item">
+            <strong>Diet Preference</strong>
+            <span id="profileDiet">--</span>
+          </div>
+
+          <div class="profile-item">
+            <strong>Allergies</strong>
+            <span id="profileAllergies">--</span>
+          </div>
+
+          <div class="profile-item">
+            <strong>Health Conditions</strong>
+            <span id="profileConditions">--</span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(sec =>
+      sec.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* Firebase Config */
+  const firebaseConfig = {
+    apiKey: "AIzaSyAoN5ZxYtfs7Vn4erhVNOhBtfN7bmVqzOg",
+    authDomain: "nutri-7675b.firebaseapp.com",
+    projectId: "nutri-7675b"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      window.location.replace("login.html");
+    } else {
+
+      document.getElementById("profileEmail").textContent = user.email;
+
+      db.collection("users").doc(user.uid).get()
+        .then(doc => {
+          if (doc.exists) {
+
+            const data = doc.data();
+
+            document.getElementById("profileName").textContent = data.name || "--";
+            document.getElementById("profileAge").textContent = data.age || "--";
+            document.getElementById("profileGender").textContent = data.gender || "--";
+            document.getElementById("profileHeight").textContent = data.height || "--";
+            document.getElementById("profileWeight").textContent = data.weight || "--";
+            document.getElementById("profileDiet").textContent = data.diet || "--";
+            document.getElementById("profileAllergies").textContent = data.allergies || "None";
+            document.getElementById("profileConditions").textContent = data.conditions || "None";
+
+            // Avatar first letter
+            if (data.name) {
+              document.getElementById("initialLetter").textContent =
+                data.name.charAt(0).toUpperCase();
+            }
+
+          }
+        });
+    }
+  });
+
+
+  function logout() {
+    auth.signOut().then(() => {
+      window.location.replace("login.html");
+    });
+  }
+  function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      const img = document.getElementById("preview");
+      img.src = reader.result;
+      img.style.display = "block";
+    }
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  async function analyzeFood(){
+
+    const file = document.getElementById("imageInput").files[0];
+    const user = firebase.auth().currentUser;
+
+    if (!file || !user){
+      alert("Upload image and login first");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("uid", user.uid);
+
+    document.getElementById("resultBox").innerHTML = "⏳ Analyzing...";
+
+    const response = await fetch("http://127.0.0.1:5000/analyze", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    const statusClass = data.status === "SAFE" ? "safe" : "not-safe";
+
+    const high = data.risk_chart.high || 0;
+    const medium = data.risk_chart.medium || 0;
+    const low = data.risk_chart.low || 0;
+
+    const totalIngredients =
+      (data.risk_details.high.length || 0) +
+      (data.risk_details.medium.length || 0) +
+      (data.risk_details.low.length || 0);
+
+    // Risk Summary Message
+    let summaryMessage = "";
+    if (high > 0) {
+      summaryMessage = "⚠️ High risk ingredients detected. Avoid consumption.";
+    } else if (medium > 0) {
+      summaryMessage = "Moderate ingredients present. Consume in limited quantity.";
+    } else {
+      summaryMessage = "No harmful ingredients detected.";
+    }
+
+    document.getElementById("resultBox").innerHTML = `
+      <div class="result-card ${statusClass}">
+        <h3>${data.status === "SAFE" ? "✅ SAFE TO CONSUME" : "❌ NOT OMMENDED"}</h3>
+        <p>${data.alert}</p>
+
+        <h4>📊 Risk Summary</h4>
+        <p><strong>Total Ingredients Detected:</strong> ${totalIngredients}</p>
+        <p>${summaryMessage}</p>
+
+        <h4>📝 Extracted Ingredients</h4>
+        <div class="ingredient-box">
+          ${data.ingredients || "No ingredients detected"}
+        </div>
+
+        ${
+          totalIngredients > 0
+          ? `
+          <div class="chart-container">
+            <canvas id="riskChart"></canvas>
+          </div>
+          `
+          : `<p>No ingredient data available for chart.</p>`
+        }
+
+        <h4>🔎 Ingredient Breakdown</h4>
+        <p><strong style="color:red;">High Risk (${high}%):</strong> ${data.risk_details.high.join(", ") || "None"}</p>
+        <p><strong style="color:orange;">Medium Risk (${medium}%):</strong> ${data.risk_details.medium.join(", ") || "None"}</p>
+        <p><strong style="color:green;">Low Risk (${low}%):</strong> ${data.risk_details.low.join(", ") || "None"}</p>
+      </div>
+    `;
+
+    if (totalIngredients > 0) {
+      const ctx = document.getElementById('riskChart').getContext('2d');
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: [
+            `High Risk (${high}%)`,
+            `Medium Risk (${medium}%)`,
+            `Low Risk (${low}%)`
+          ],
+          datasets: [{
+            data: [high, medium, low],
+            backgroundColor: ['#ff4d4d','#ffcc00','#4CAF50']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+
+
+    
+
+  let cameraStream = null;
+  let capturedFile = null;
+
+
+  // OPEN CAMERA
+  async function openCamera(){
+
+    const video =
+      document.getElementById("camera");
+
+    try{
+
+      cameraStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+
+      video.srcObject =
+        cameraStream;
+
+      video.style.display = "block";
+
+      document.getElementById("captureBtn").style.display="inline";
+
+    }
+    catch(err){
+
+      alert("Camera access denied");
+
+    }
+
+  }
+
+
+
+  // CAPTURE PHOTO
+  function capturePhoto() {
+
+  const video = document.getElementById("camera");
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  canvas.getContext("2d").drawImage(video, 0, 0);
+
+  canvas.toBlob(function(blob) {
+
+    capturedFile = new File([blob], "camera.jpg", {
+      type: "image/jpeg"
+    });
+
+    const preview = document.getElementById("preview");
+
+    preview.src = URL.createObjectURL(blob);
+
+    preview.style.display = "block";
+
+
+    // ✅ CLOSE CAMERA HERE
+    if (cameraStream) {
+
+      cameraStream.getTracks().forEach(track => track.stop());
+
+      cameraStream = null;
+
+    }
+
+    video.srcObject = null;
+
+    video.style.display = "none";
+
+    document.getElementById("captureBtn").style.display = "none";
+
+  }, "image/jpeg");
+
+}
+  // STOP CAMERA FUNCTION
+  function stopCamera(){
+
+    const video =
+      document.getElementById("camera");
+
+    if(cameraStream){
+
+      cameraStream
+        .getTracks()
+        .forEach(track => track.stop());
+
+    }
+
+    video.style.display="none";
+
+    document.getElementById("captureBtn").style.display="none";
+
+   
+    cameraStream = null;
+
+  }
+
+  video.srcObject = null;
+
+ 
+
+
+
+
+  // ANALYZE FUNCTION
+ async function analyzeFood(){
+
+  let file = document.getElementById("imageInput").files[0];
+
+  // use camera image if file not selected
+  if(!file && capturedFile){
+    file = capturedFile;
+  }
+
+  const user = firebase.auth().currentUser;
+
+  if(!file || !user){
+    alert("Upload or Capture image and login first");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("uid", user.uid);
+
+   document.getElementById("resultBox").innerHTML = "⏳ Analyzing...";
+
+    const response = await fetch("http://127.0.0.1:5000/analyze", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    const statusClass = data.status === "SAFE" ? "safe" : "not-safe";
+
+    const high = data.risk_chart.high || 0;
+    const medium = data.risk_chart.medium || 0;
+    const low = data.risk_chart.low || 0;
+
+    const totalIngredients =
+      (data.risk_details.high.length || 0) +
+      (data.risk_details.medium.length || 0) +
+      (data.risk_details.low.length || 0);
+
+    // Risk Summary Message
+    let summaryMessage = "";
+    if (high > 0) {
+      summaryMessage = "⚠️ High risk ingredients detected. Avoid consumption.";
+    } else if (medium > 0) {
+      summaryMessage = "Moderate ingredients present. Consume in limited quantity.";
+    } else {
+      summaryMessage = "No harmful ingredients detected.";
+    }
+
+    document.getElementById("resultBox").innerHTML = `
+      <div class="result-card ${statusClass}">
+        <h3>${data.status === "SAFE" ? "✅ SAFE TO CONSUME" : "❌ NOT RECOMMENDED"}</h3>
+        <p>${data.alert}</p>
+
+        <h4>📊 Risk Summary</h4>
+        <p><strong>Total Ingredients Detected:</strong> ${totalIngredients}</p>
+        <p>${summaryMessage}</p>
+
+        <h4>📝 Extracted Ingredients</h4>
+        <div class="ingredient-box">
+          ${data.ingredients || "No ingredients detected"}
+        </div>
+
+        ${
+          totalIngredients > 0
+          ? `
+          <div class="chart-container">
+            <canvas id="riskChart"></canvas>
+          </div>
+          `
+          : `<p>No ingredient data available for chart.</p>`
+        }
+
+        <h4>🔎 Ingredient Breakdown</h4>
+        <p><strong style="color:red;">High Risk (${high}%):</strong> ${data.risk_details.high.join(", ") || "None"}</p>
+        <p><strong style="color:orange;">Medium Risk (${medium}%):</strong> ${data.risk_details.medium.join(", ") || "None"}</p>
+        <p><strong style="color:green;">Low Risk (${low}%):</strong> ${data.risk_details.low.join(", ") || "None"}</p>
+      </div>
+    `;
+
+    if (totalIngredients > 0) {
+      const ctx = document.getElementById('riskChart').getContext('2d');
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: [
+            `High Risk (${high}%)`,
+            `Medium Risk (${medium}%)`,
+            `Low Risk (${low}%)`
+          ],
+          datasets: [{
+            data: [high, medium, low],
+            backgroundColor: ['#ff4d4d','#ffcc00','#4CAF50']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label;
+                }
+              }
+            }
+          }
+        }
+      })
+    }
+  }
+
+
+
+
+
+  </script>
+
+  </body>
+  </html>

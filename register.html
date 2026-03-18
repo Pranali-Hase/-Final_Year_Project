@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NutriScan Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Left Banner -->
+  <div class="side-banner">
+    <div>
+      <h2>Create Your Health Profile</h2>
+      
+      <p>Register and personalize your food detection results based on allergies, conditions, and diet.</p>
+    </div>
+  </div>
+
+  <!-- Right Registration Form -->
+  <div class="form-box">
+    <h2>Register</h2>
+
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="number" id="age" placeholder="Age (years)" required>
+
+    <select id="gender" required>
+      <option value="" disabled selected>Select Gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <input type="number" id="height" placeholder="Height (cm)" required>
+    <input type="number" id="weight" placeholder="Weight (kg)" required>
+
+    <input type="text" id="allergies" placeholder="Allergies (comma-separated)">
+    <input type="text" id="conditions" placeholder="Health Conditions (comma-separated)">
+
+    <select id="diet" required>
+      <option value="" disabled selected>Select Diet Preference</option>
+      <option value="None">None</option>
+      <option value="Vegetarian">Vegetarian</option>
+      <option value="Vegan">Vegan</option>
+      <option value="Keto">Keto</option>
+      <option value="Low-Carb">Low-Carb</option>
+      <option value="Diabetic-Friendly">Diabetic-Friendly</option>
+      <option value="Gluten-Free">Gluten-Free</option>
+      <option value="High-Protein">High-Protein</option>
+    </select>
+
+    <input type="email" id="email" placeholder="Email" required>
+   <input 
+  type="password" 
+  id="password" 
+  placeholder="Password"
+  pattern="^(?=.*[A-Z])(?=.*[\W_]).{8,}$"
+  title="Password must be at least 8 characters long, contain one uppercase letter and one special character"
+  required
+>
+
+    <button onclick="register()">Register</button>
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAoN5ZxYtfs7Vn4erhVNOhBtfN7bmVqzOg",
+  authDomain: "nutri-7675b.firebaseapp.com",
+  projectId: "nutri-7675b"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* PASSWORD REGEX */
+const passwordRegex = 
+/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+/* REAL TIME VALIDATION */
+const passwordInput = document.getElementById("password");
+const errorText = document.getElementById("passwordError");
+
+passwordInput.addEventListener("input", function () {
+  if (!passwordRegex.test(passwordInput.value)) {
+    errorText.style.display = "block";
+  } else {
+    errorText.style.display = "none";
+  }
+});
+
+function register() {
+
+  const name = document.getElementById('name').value;
+  const age = document.getElementById('age').value;
+  const gender = document.getElementById('gender').value;
+  const height = document.getElementById('height').value;
+  const weight = document.getElementById('weight').value;
+  const allergies = document.getElementById('allergies').value;
+  const conditions = document.getElementById('conditions').value;
+  const diet = document.getElementById('diet').value;
+  const email = document.getElementById('email').value;
+  const password = passwordInput.value;
+
+  if (!email || !password || !name || !age || !height || !weight || !gender || !diet) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  if (!passwordRegex.test(password)) {
+    alert("Password does not meet security requirements.");
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(cred => {
+      return db.collection("users").doc(cred.user.uid).set({
+        name,
+        age,
+        gender,
+        height,
+        weight,
+        allergies,
+        conditions,
+        diet
+      });
+    })
+    .then(() => {
+      alert("Registered successfully!");
+      window.location.href = "dashboard.html";
+    })
+    .catch(err => {
+      alert("Error: " + err.message);
+    });
+}
+</script>
+
+
+
+</body>
+</html>
